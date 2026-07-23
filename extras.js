@@ -162,7 +162,27 @@ window.PORTFOLIO_EXTRAS = {
     pdfHint: "PDF Â· detailed experience Â· key projects Â· skills",
     pdfTitle: "Complete CV for engineering managers and HR",
     pdfText:
-      "One detailed CV combines 1C developßİ­¢G§²ÚîÆ­yÔ: "CASE-009",
+      "One detailed CV combines 1C development, business analysis, integrations, corporate application support and hands-on knowledge of warehouse and logistics processes.",
+    contactText:
+      "Open to opportunities in Serbia: 1C development, ERP/Application Support, business analysis and integration work. Available for office, hybrid or remote work.",
+    secondEmail: "Additional email",
+    extras: [
+      {
+        id: "CASE-007",
+        title: "DataMatrix extraction from XML",
+        text: "A local tool parses incoming XML, extracts marking codes, normalizes rows and creates a clean TXT/CSV file for further verification.",
+        result: "Manual copying from technical files was replaced with a repeatable operation.",
+        stack: "XML Â· JavaScript Â· TXT Â· CSV Â· DataMatrix",
+      },
+      {
+        id: "CASE-008",
+        title: "Duplicate detection and cleanup",
+        text: "Checks merged code lists, reports duplicate statistics and creates a clean output without sending business data to external services.",
+        result: "Reduced errors in marking uploads and reconciliation workflows.",
+        stack: "JavaScript Â· File API Â· Set/Map Â· CSV/TXT",
+      },
+      {
+        id: "CASE-009",
         title: "Excluding written-off and returned codes",
         text: "Compares source data with write-off and return files, records matches and prepares the valid remainder for the next operation.",
         result: "Operators avoid resubmitting codes that have already left the working flow.",
