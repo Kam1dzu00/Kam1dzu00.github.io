@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Mikhail Fedrunov - 1C developer, business analyst and automation specialist">
+  <title>Mikhail Fedrunov</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="enterprise-bar">
+    <a class="app-brand" href="#top" aria-label="Mikhail Fedrunov">
+      <span class="app-icon">MF</span><span>MF:Enterprise</span><small>8.5</small>
+    </a>
+    <nav class="app-tabs">
+      <a href="#profile" data-nav="profile"></a>
+      <a href="#experience" data-nav="experience"></a>
+      <a href="#cases" data-nav="cases"></a>
+      <a href="#more-work" id="navExtra"></a>
+      <a href="#skills" data-nav="skills"></a>
+      <a href="#cv" data-nav="cv"></a>
+    </nav>
+    <div class="language-switch" aria-label="Language">
+      <button data-lang="ru">RU</button>
+      <button data-lang="en">EN</button>
+      <button data-lang="sr">SR</button>
+    </div>
+  </div>
+
+  <main id="top">
+    <section class="hero shell">
+      <div class="hero-copy reveal">
+        <div class="status"><span></span><b id="statusText"></b></div>
+        <p class="eyebrow" id="heroKicker"></p>
+        <h1 id="heroTitle"></h1>
+        <p class="hero-role" id="heroRole"></p>
+        <p class="lead" id="heroLead"></p>
+        <div class="hero-actions">
+          <a class="btn primary" href="resumes/Mikhail_Fedrunov_Universal_CV.pdf" target="_blank" id="heroPdf"></a>
+          <a class="btn" href="https://t.me/Kam1dzu00" target="_blank" id="heroContact"></a>
+          <a class="btn quiet" href="#cases" id="heroCases"></a>
+        </div>
+      </div>
+
+      <aside class="candidate-form reveal" aria-label="Candidate card">
+        <div class="form-title">
+          <span class="mini-icon">1C</span>
+          <div><b>Mikhail Fedrunov</b><small id="formRole"></small></div>
+          <span class="record-state">●</span>
+        </div>
+        <div class="form-body">
+          <div class="photo-shell">
+            <img src="assets/mikhail-fedrunov.webp" alt="Mikhail Fedrunov" class="profile-photo">
+            <span>EMPLOYEE.CARD</span>
+          </div>
+          <div class="form-fields">
+            <div><label id="lblStatus"></label><strong id="valStatus"></strong></div>
+            <div><label id="lblFocus"></label><strong id="valFocus"></strong></div>
+            <div><label id="lblScale"></label><strong id="valScale"></strong></div>
+            <div><label id="lblLocation"></label><strong id="valLocation"></strong></div>
+          </div>
+        </div>
+        <div class="command-bar"><span>Ctrl+Enter</span><b id="commandText"></b><i></i></div>
+      </aside>
+    </section>
+
+    <section class="metrics-strip"><div class="shell" id="metrics"></div></section>
+
+    <section id="profile" class="section shell">
+      <header class="section-head reveal">
+        <div><p class="eyebrow" id="profileLabel"></p><h2 id="profileTitle"></h2></div>
+        <p id="profileText"></p>
+      </header>
+      <div id="competencyGrid" class="competency-grid"></div>
+    </section>
+
+    <section id="experience" class="section panel-section">
+      <div class="shell">
+        <header class="section-head reveal">
+          <div><p class="eyebrow" id="experienceLabel"></p><h2 id="experienceTitle"></h2></div>
+        </header>
+        <div id="experienceGrid" class="experience-grid"></div>
+      </div>
+    </section>
+
+    <section id="cases" class="section shell">
+      <header class="section-head reveal">
+        <div><p class="eyebrow" id="casesLabel"></p><h2 id="casesTitle"></h2></div>
+        <p id="casesIntro"></p>
+      </header>
+      <aside class="case-manifest reveal">
+        <span class="mini-icon">1C</span>
+        <div><b id="caseNoteTitle"></b><p id="caseNote"></p></div>
+      </aside>
+      <div id="caseGrid" class="case-grid"></div>
+    </section>
+
+    <section id="more-work" class="section additional-section">
+      <div class="shell">
+        <header class="section-head reveal">
+          <div><p class="eyebrow" id="extraLabel"></p><h2 id="extraTitle"></h2></div>
+          <p id="extraIntro"></p>
+        </header>
+        <div id="additionalGrid" class="additional-grid"></div>
+      </div>
+    </section>
+
+    <section class="section workflow-section">
+      <div class="shell">
+        <header class="section-head reveal">
+          <div><p class="eyebrow" id="workflowLabel"></p><h2 id="workflowTitle"></h2></div>
+        </header>
+        <div id="workflowGrid" class="workflow-grid"></div>
+      </div>
+    </section>
+
+    <section id="skills" class="section shell">
+      <header class="section-head reveal">
+        <div><p class="eyebrow" id="skillsLabel"></p><h2 id="skillsTitle"></h2></div>
+      </header>
+      <div id="skillGrid" class="skill-grid"></div>
+    </section>
+
+    <section class="section panel-section">
+      <div class="shell">
+        <header class="section-head reveal">
+          <div><p class="eyebrow" id="toolsLabel"></p><h2 id="toolsTitle"></h2></div>
+        </header>
+        <div id="demoGrid" class="demo-grid"></div>
+      </div>
+    </section>
+
+    <section id="cv" class="section shell">
+      <div class="cv-panel reveal">
+        <div>
+          <p class="eyebrow" id="pdfBadge"></p>
+          <h2 id="pdfTitle"></h2>
+          <p id="pdfText"></p>
+        </div>
+        <a class="download-card single-pdf" href="resumes/Mikhail_Fedrunov_Universal_CV.pdf" target="_blank">
+          <span>PDF / CV</span><b id="pdfButton"></b><small id="pdfHint"></small>
+        </a>
+      </div>
+    </section>
+
+    <section id="contacts" class="section contact-section">
+      <div class="shell contact-card reveal">
+        <div>
+          <p class="eyebrow" id="contactLabel"></p>
+          <h2 id="contactTitle"></h2>
+          <p class="contact-copy" id="contactText"></p>
+        </div>
+        <div class="contact-links">
+          <a href="mailto:Kam1dzu00@yandex.ru"><small id="emailLabel"></small><strong>Kam1dzu00@yandex.ru</strong></a>
+          <a href="mailto:mishutik.tupik@gmail.com"><small id="secondEmailLabel"></small><strong>mishutik.tupik@gmail.com</strong></a>
+          <a href="https://t.me/Kam1dzu00" target="_blank"><small>Telegram</small><strong>@Kam1dzu00</strong></a>
+          <a href="tel:+79785353595"><small id="phoneLabel"></small><strong>+7 978 535-35-95</strong></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell">
+      <span>© 2026 Mikhail Fedrunov</span>
+      <span id="footerText"></span>
+      <span class="system-status" id="systemStatus"></span>
+    </div>
+  </footer>
+
+  <div id="caseDialog" class="case-dialog-backdrop" hidden>
+    <section class="dialog-window" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+      <div class="dialog-title">
+        <span class="mini-icon">1C</span><b id="dialogTitle"></b>
+        <button id="dialogClose" type="button">×</button>
+      </div>
+      <div class="dialog-content" id="dialogContent"></div>
+    </section>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="extras.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Удаление дубликатов кодов</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f7fa;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .app {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+            padding: 40px 36px;
+        }
+
+        h1 {
+            font-size: 26px;
+            font-weight: 600;
+            color: #0d0d0d;
+            margin-bottom: 4px;
+        }
+
+        .sub {
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 28px;
+            border-bottom: 1px solid #eaeef2;
+            padding-bottom: 18px;
+        }
+
+        .upload-zone {
+            border: 2px dashed #d0d7de;
+            border-radius: 14px;
+            padding: 36px 20px 28px;
+            text-align: center;
+            transition: border-color 0.2s, background 0.2s;
+            background: #fafbfc;
+            position: relative;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .upload-zone:hover {
+            border-color: #4d6bfe;
+            background: #f6f8ff;
+        }
+
+        .upload-zone.dragover {
+            border-color: #4d6bfe;
+            background: #edf1ff;
+        }
+
+        .upload-zone label {
+            display: block;
+            font-weight: 500;
+            font-size: 16px;
+            color: #1a1f2b;
+            margin-bottom: 6px;
+        }
+
+        .upload-zone .desc {
+            font-size: 14px;
+            color: #6b7a8f;
+            margin-bottom: 10px;
+        }
+
+        .upload-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-list {
+            margin: 16px 0 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .file-tag {
+            background: #eef2f7;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 13px;
+            color: #1a1f2b;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .file-tag .remove {
+            cursor: pointer;
+            color: #999;
+            font-weight: 700;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .file-tag .remove:hover {
+            color: #e74c3c;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin: 16px 0 20px;
+            padding: 14px 0;
+            border-top: 1px solid #eaeef2;
+        }
+
+        .btn {
+            background: #4d6bfe;
+            border: none;
+            color: white;
+            font-weight: 500;
+            font-size: 15px;
+            padding: 10px 28px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #3a58e0;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #eef2f7;
+            color: #1a1f2b;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #e2e8f0;
+        }
+
+        .btn-success {
+            background: #22c55e;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #16a34a;
+        }
+
+        .stats {
+            font-size: 14px;
+            color: #1a1f2b;
+            background: #f6f8fa;
+            padding: 10px 18px;
+            border-radius: 40px;
+            margin-left: auto;
+            white-space: nowrap;
+        }
+
+        .stats strong {
+            font-weight: 600;
+        }
+
+        .preview-area {
+            border: 1px solid #eaeef2;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #fafbfc;
+            margin-top: 10px;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 18px;
+            background: #f6f8fa;
+            border-bottom: 1px solid #eaeef2;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1f2b;
+        }
+
+        .preview-body {
+            max-height: 350px;
+            overflow: auto;
+            padding: 12px 18px;
+            font-family: "SF Mono", "Menlo", "Consolas", monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: #1a1f2b;
+            background: white;
+        }
+
+        .preview-body .dup {
+            background: #fde8e8;
+            display: block;
+            padding: 1px 0;
+        }
+
+        .preview-body .unique {
+            display: block;
+            padding: 1px 0;
+        }
+
+        .empty-state {
+            color: #8b9aae;
+            text-align: center;
+            padding: 40px 20px;
+            font-size: 14px;
+        }
+
+        .status-msg {
+            margin-top: 16px;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            background: #f0f4ff;
+            color: #1a3b7a;
+        }
+
+        .status-msg.success {
+            background: #e6f7e6;
+            color: #1a5a3a;
+        }
+
+        .status-msg.error {
+            background: #fde8e8;
+            color: #7a1a1a;
+        }
+
+        .status-msg.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 12px 0 16px;
+        }
+
+        .stat-card {
+            background: #f6f8fa;
+            padding: 12px 16px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card .num {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0d0d0d;
+            display: block;
+        }
+
+        .stat-card .label {
+            font-size: 13px;
+            color: #6b7a8f;
+        }
+
+        .stat-card.danger .num {
+            color: #e74c3c;
+        }
+
+        .stat-card.success .num {
+            color: #22c55e;
+        }
+
+        .stat-card.warning .num {
+            color: #f59e0b;
+        }
+
+        .footer-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        @media (max-width: 640px) {
+            .app {
+                padding: 24px 16px;
+            }
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .stats {
+                margin-left: 0;
+                text-align: center;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .footer-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <h1>🧹 Удаление дубликатов кодов</h1>
+    <div class="sub">Загрузите TXT-файлы — получите один файл только с уникальными кодами</div>
+
+    <div class="upload-zone" id="dropZone">
+        <label>📂 Загрузите TXT-файлы</label>
+        <div class="desc">Выберите файлы или перетащите их сюда</div>
+        <input type="file" id="fileInput" accept=".txt" multiple>
+        <div class="file-list" id="fileList"></div>
+    </div>
+
+    <div class="toolbar">
+        <button class="btn" id="processBtn" disabled>🔍 Обработать</button>
+        <button class="btn btn-secondary" id="clearBtn">🗑 Очистить</button>
+        <span class="stats" id="statsDisplay">⏳ ожидание</span>
+    </div>
+
+    <div id="statusMsg"></div>
+    <div id="statsGrid" class="stats-grid" style="display:none;"></div>
+
+    <div class="preview-area">
+        <div class="preview-header">
+            <span>📄 Результат</span>
+            <span id="previewCount">0 кодов</span>
+        </div>
+        <div class="preview-body" id="previewBody">
+            <div class="empty-state">Загрузите TXT-файлы и нажмите «Обработать»</div>
+        </div>
+    </div>
+
+    <div class="footer-actions">
+        <button class="btn btn-success" id="downloadUniqueBtn" disabled>⬇ Скачать уникальные коды</button>
+        <button class="btn btn-secondary" id="downloadDuplicatesBtn" disabled>⬇ Скачать дубликаты</button>
+    </div>
+</div>
+
+<script>
+    (function() {
+        let loadedFiles = [];
+        let allCodes = [];
+        let uniqueCodes = [];
+        let duplicateCodes = [];
+        let duplicateCount = 0;
+        let totalCodes = 0;
+
+        const fileInput = document.getElementById('fileInput');
+        const dropZone = document.getElementById('dropZone');
+        const fileList = document.getElementById('fileList');
+        const processBtn = document.getElementById('processBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const downloadUniqueBtn = document.getElementById('downloadUniqueBtn');
+        const downloadDuplicatesBtn = document.getElementById('downloadDuplicatesBtn');
+        const previewBody = document.getElementById('previewBody');
+        const previewCount = document.getElementById('previewCount');
+        const statsDisplay = document.getElementById('statsDisplay');
+        const statusMsg = document.getElementById('statusMsg');
+        const statsGrid = document.getElementById('statsGrid');
+
+        function setStatus(msg, type = '') {
+            statusMsg.textContent = msg;
+            statusMsg.className = 'status-msg' + (type ? ' ' + type : '');
+        }
+
+        function clearStatus() {
+            statusMsg.textContent = '';
+            statusMsg.className = 'status-msg';
+        }
+
+        function updateUI() {
+            const hasFiles = loadedFiles.length > 0;
+            processBtn.disabled = !hasFiles;
+
+            fileList.innerHTML = '';
+            for (const f of loadedFiles) {
+                const tag = document.createElement('span');
+                tag.className = 'file-tag';
+                tag.innerHTML = `${f.name} <span class="remove" data-name="${f.name}">×</span>`;
+                fileList.appendChild(tag);
+            }
+
+            document.querySelectorAll('.file-tag .remove').forEach(el => {
+                el.addEventListener('click', function(e) {
+                    const name = this.getAttribute('data-name');
+                    removeFile(name);
+                });
+            });
+
+            if (uniqueCodes.length > 0) {
+                downloadUniqueBtn.disabled = false;
+                downloadDuplicatesBtn.disabled = duplicateCodes.length === 0;
+                statsDisplay.innerHTML = `✅ <strong>${uniqueCodes.length}</strong> уникальных, <strong>${duplicateCount}</strong> дубликатов удалено`;
+            } else if (loadedFiles.length > 0) {
+                statsDisplay.innerHTML = `📄 <strong>${loadedFiles.length}</strong> файлов загружено`;
+            } else {
+                statsDisplay.innerHTML = '⏳ ожидание';
+            }
+        }
+
+        function renderPreview() {
+            if (uniqueCodes.length === 0 && duplicateCodes.length === 0) {
+                if (loadedFiles.length > 0) {
+                    previewBody.innerHTML = `<div class="empty-state">Нажмите «Обработать»</div>`;
+                } else {
+                    previewBody.innerHTML = `<div class="empty-state">Загрузите TXT-файлы</div>`;
+                }
+                previewCount.textContent = '0 кодов';
+                return;
+            }
+
+            const maxShow = 500;
+            let html = '';
+
+            if (uniqueCodes.length > 0) {
+                html += '✅ <strong>Уникальные коды (первые 500):</strong>\n';
+                const show = uniqueCodes.slice(0, maxShow);
+                for (const code of show) {
+                    html += `<span class="unique">${code}</span>\n`;
+                }
+                if (uniqueCodes.length > maxShow) {
+                    html += `\n... и ещё ${uniqueCodes.length - maxShow} уникальных кодов`;
+                }
+            }
+
+            if (duplicateCodes.length > 0 && duplicateCodes.length <= 100) {
+                html += '\n\n🔴 <strong>Удалённые дубликаты:</strong>\n';
+                for (const code of duplicateCodes.slice(0, 100)) {
+                    html += `<span class="dup">${code}</span>\n`;
+                }
+                if (duplicateCodes.length > 100) {
+                    html += `\n... и ещё ${duplicateCodes.length - 100} дубликатов`;
+                }
+            } else if (duplicateCodes.length > 100) {
+                html += `\n\n🔴 Удалено ${duplicateCodes.length} дубликатов (показаны только уникальные)`;
+            }
+
+            previewBody.innerHTML = html;
+            previewCount.textContent = `${uniqueCodes.length} уникальных, ${duplicateCodes.length} дубликатов`;
+        }
+
+        function renderStats() {
+            if (uniqueCodes.length === 0 && duplicateCodes.length === 0) {
+                statsGrid.style.display = 'none';
+                return;
+            }
+
+            statsGrid.style.display = 'grid';
+            statsGrid.innerHTML = `
+                <div class="stat-card success">
+                    <span class="num">${totalCodes}</span>
+                    <span class="label">Всего кодов</span>
+                </div>
+                <div class="stat-card success">
+                    <span class="num">${uniqueCodes.length}</span>
+                    <span class="label">Уникальных кодов</span>
+                </div>
+                <div class="stat-card danger">
+                    <span class="num">${duplicateCodes.length}</span>
+                    <span class="label">Дубликатов удалено</span>
+                </div>
+                <div class="stat-card warning">
+                    <span class="num">${duplicateCodes.length > 0 ? Math.round((duplicateCodes.length / totalCodes) * 100) : 0}%</span>
+                    <span class="label">% дубликатов</span>
+                </div>
+            `;
+        }
+
+        function parseTXT(text) {
+            return text.split(/\r?\n/).map(s => s.trim().replace(/^"|"$/g, '')).filter(s => s.length > 0);
+        }
+
+        function loadFiles(files) {
+            let pending = files.length;
+            let hasError = false;
+
+            for (const file of files) {
+                if (loadedFiles.some(f => f.name === file.name)) {
+                    setStatus(`Файл "${file.name}" уже загружен`, 'warning');
+                    hasError = true;
+                    pending--;
+                    continue;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const text = e.target.result;
+                        loadedFiles.push({
+                            name: file.name,
+                            content: text
+                        });
+                        setStatus(`Загружен: ${file.name}`, 'success');
+                    } catch (err) {
+                        setStatus(`Ошибка при чтении ${file.name}: ${err.message}`, 'error');
+                        hasError = true;
+                    }
+                    pending--;
+                    if (pending === 0) {
+                        allCodes = [];
+                        uniqueCodes = [];
+                        duplicateCodes = [];
+                        duplicateCount = 0;
+                        totalCodes = 0;
+                        updateUI();
+                        renderPreview();
+                        statsGrid.style.display = 'none';
+                        if (!hasError && loadedFiles.length > 0) {
+                            setStatus(`Загружено ${loadedFiles.length} файлов. Нажмите «Обработать».`, 'success');
+                        }
+                    }
+                };
+                reader.onerror = function() {
+                    setStatus(`Ошибка при чтении ${file.name}`, 'error');
+                    pending--;
+                    if (pending === 0) updateUI();
+                };
+                reader.readAsText(file, 'UTF-8');
+            }
+
+            if (files.length === 0) {
+                setStatus('Файлы не выбраны', 'error');
+            }
+        }
+
+        function removeFile(name) {
+            loadedFiles = loadedFiles.filter(f => f.name !== name);
+            allCodes = [];
+            uniqueCodes = [];
+            duplicateCodes = [];
+            duplicateCount = 0;
+            totalCodes = 0;
+            clearStatus();
+            updateUI();
+            renderPreview();
+            statsGrid.style.display = 'none';
+            setStatus(`Файл "${name}" удалён`, '');
+        }
+
+        function processFiles() {
+            if (loadedFiles.length === 0) {
+                setStatus('Нет загруженных файлов', 'error');
+                return;
+            }
+
+            const all = [];
+            for (const f of loadedFiles) {
+                const codes = parseTXT(f.content);
+                all.push(...codes);
+            }
+
+            totalCodes = all.length;
+
+            const seen = new Set();
+            const unique = [];
+            const duplicates = [];
+
+            for (const code of all) {
+                if (seen.has(code)) {
+                    duplicates.push(code);
+                } else {
+                    seen.add(code);
+                    unique.push(code);
+                }
+            }
+
+            allCodes = all;
+            uniqueCodes = unique;
+            duplicateCodes = duplicates;
+            duplicateCount = duplicates.length;
+
+            updateUI();
+            renderPreview();
+            renderStats();
+
+            if (duplicates.length === 0) {
+                setStatus(`✅ Дубликатов не найдено. Все ${unique.length} кодов уникальны.`, 'success');
+            } else {
+                setStatus(`🔍 Найдено ${duplicates.length} дубликатов. Уникальных кодов: ${unique.length}`, 'warning');
+            }
+        }
+
+        function downloadTXT(codes, filename) {
+            if (codes.length === 0) {
+                setStatus('Нет данных для скачивания', 'error');
+                return;
+            }
+            const content = codes.join('\n');
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function clearAll() {
+            loadedFiles = [];
+            allCodes = [];
+            uniqueCodes = [];
+            duplicateCodes = [];
+            duplicateCount = 0;
+            totalCodes = 0;
+            fileInput.value = '';
+            clearStatus();
+            updateUI();
+            renderPreview();
+            statsGrid.style.display = 'none';
+            setStatus('Очищено', '');
+        }
+
+        // обработчики
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files.length > 0) {
+                loadFiles(this.files);
+            }
+            this.value = '';
+        });
+
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files && files.length > 0) {
+                loadFiles(files);
+            }
+        });
+
+        processBtn.addEventListener('click', processFiles);
+        clearBtn.addEventListener('click', clearAll);
+
+        downloadUniqueBtn.addEventListener('click', function() {
+            if (uniqueCodes.length === 0) {
+                setStatus('Нет уникальных кодов для скачивания', 'error');
+                return;
+            }
+            downloadTXT(uniqueCodes, `unique_codes_${uniqueCodes.length}.txt`);
+        });
+
+        downloadDuplicatesBtn.addEventListener('click', function() {
+            if (duplicateCodes.length === 0) {
+                setStatus('Нет дубликатов для скачивания', 'error');
+                return;
+            }
+            downloadTXT(duplicateCodes, `duplicates_${duplicateCodes.length}.txt`);
+        });
+
+        updateUI();
+        renderPreview();
+        statsGrid.style.display = 'none';
+    })();
+</script>
+
+</body>
+</html>

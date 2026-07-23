@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TXT → CSV для Честного знака</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:22px;background:#f3f4f6;color:#111827;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.container{max-width:1150px;margin:auto;background:#fff;border-radius:18px;padding:28px;box-shadow:0 12px 35px rgba(15,23,42,.08)}
+h1{margin:0 0 8px;font-size:26px}.subtitle{color:#6b7280;line-height:1.5;margin-bottom:22px}
+.upload{border:2px dashed #cbd5e1;border-radius:16px;padding:24px;text-align:center;background:#f8fafc;transition:.15s}
+.upload.dragover{border-color:#4f46e5;background:#eef2ff}
+input[type=file]{width:100%;max-width:650px;margin:14px auto;display:block}
+.hint{font-size:13px;color:#6b7280;line-height:1.45}
+.file-list{margin-top:12px;max-height:170px;overflow:auto;text-align:left;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:8px;font-size:12px}
+.file-row{padding:6px;border-bottom:1px solid #eee;word-break:break-all}.file-row:last-child{border-bottom:0}
+.settings{display:grid;grid-template-columns:2fr 1fr 1fr;gap:14px;margin:18px 0}
+.setting{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:14px}
+.setting label{display:block;font-size:13px;color:#4b5563;margin-bottom:7px}
+.setting input{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px}
+.fixed{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.fixed .item{padding:11px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;font-size:13px}
+.fixed b{display:block;margin-top:3px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+button,.download-link{border:0;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+button:disabled{opacity:.5;cursor:not-allowed}.primary{background:#4f46e5;color:#fff}.success,.download-link{background:#059669;color:#fff}.outline{background:#fff;color:#4f46e5;border:1.5px solid #4f46e5}
+.stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.card{padding:14px;border:1px solid #e5e7eb;border-radius:12px;background:#f9fafb}.label{font-size:12px;color:#6b7280}.value{font-size:22px;font-weight:800;margin-top:5px}.blue{color:#4f46e5}.green{color:#059669}.orange{color:#d97706}.red{color:#dc2626}
+.log{display:none;margin-top:16px;padding:13px;border-radius:10px;background:#ecfdf5;color:#065f46;white-space:pre-wrap;font-size:13px}
+.results{display:none;margin-top:22px}
+.table-wrap{overflow:auto;border:1px solid #e5e7eb;border-radius:12px;margin-bottom:16px}
+table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:right;white-space:nowrap}th{background:#f9fafb}th:first-child,td:first-child{text-align:left;white-space:normal;min-width:260px}tfoot td{font-weight:800;background:#ecfdf5}
+.download-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.box{border:1px solid #e5e7eb;border-radius:12px;padding:14px}.box h3{margin:0 0 10px}.downloads{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto}.download-link{word-break:break-all}
+textarea{width:100%;min-height:210px;margin-top:16px;padding:12px;border:1px solid #d1d5db;border-radius:10px;font-family:"Courier New",monospace;font-size:12px;background:#f9fafb}
+footer{margin-top:20px;padding-top:16px;border-top:1px solid #e5e7eb;color:#6b7280;text-align:center;font-size:13px}
+@media(max-width:850px){body{padding:10px}.container{padding:17px}.settings,.fixed,.stats,.download-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>📄 TXT → CSV для Честного знака</h1>
+<div class="subtitle">
+Загрузите один или несколько TXT с кодами. Укажите название товара, цену и нужное количество.
+Сайт создаст CSV управляемыми частями и выдаст исходные TXT без использованных кодов.
+</div>
+
+<div class="upload" id="dropZone">
+  <b>Выберите исходные TXT-файлы с кодами</b>
+  <input type="file" id="fileInput" accept=".txt,text/plain" multiple>
+  <div class="hint">Названия файлов не важны. Коды берутся по порядку файлов и строк.</div>
+  <div class="file-list" id="fileList"><div class="hint">Файлы не выбраны</div></div>
+</div>
+
+<div class="settings">
+  <div class="setting">
+    <label for="productName">Название товара</label>
+    <input id="productName" type="text" placeholder='Например: Сигареты с фильтром "БІЛЕ СОНЦЕ оригинальные" новый дизайн МРЦ 157 руб.'>
+  </div>
+  <div class="setting">
+    <label for="price">Цена</label>
+    <input id="price" type="text" inputmode="decimal" placeholder="Например: 110.66">
+  </div>
+  <div class="setting">
+    <label for="targetCount">Сколько кодов взять</label>
+    <input id="targetCount" type="number" min="1" step="1" placeholder="Например: 8760">
+  </div>
+</div>
+
+<div class="fixed">
+  <div class="item">Номер строки<b>0</b></div>
+  <div class="item">Единица измерения<b>728 — пачка</b></div>
+  <div class="item">НДС<b>22%</b></div>
+  <div class="item">Тип идентификатора<b>КИЗ</b></div>
+</div>
+
+<div class="actions">
+  <button class="primary" id="processBtn" disabled>▶️ Создать CSV</button>
+  <button class="success" id="downloadCsvBtn" disabled>⬇️ Скачать все CSV</button>
+  <button class="success" id="downloadRemaindersBtn" disabled>⬇️ Скачать TXT без выбранных кодов</button>
+  <button class="outline" id="resetBtn">🔄 Сбросить</button>
+</div>
+
+<div class="stats">
+  <div class="card"><div class="label">Исходных файлов</div><div class="value blue" id="filesCount">0</div></div>
+  <div class="card"><div class="label">Всего строк</div><div class="value blue" id="totalCount">0</div></div>
+  <div class="card"><div class="label">Распознано кодов</div><div class="value green" id="validCount">0</div></div>
+  <div class="card"><div class="label">Выбрано</div><div class="value orange" id="selectedCount">0</div></div>
+  <div class="card"><div class="label">Осталось</div><div class="value green" id="remainingCount">0</div></div>
+  <div class="card"><div class="label">Не распознано</div><div class="value red" id="unknownCount">0</div></div>
+</div>
+
+<div class="log" id="log"></div>
+
+<div class="results" id="results">
+  <h2>📊 Сколько взято из каждого файла</h2>
+  <div class="table-wrap" id="tableWrap"></div>
+
+  <div class="download-grid">
+    <div class="box">
+      <h3>📄 CSV для загрузки</h3>
+      <div class="downloads" id="csvDownloads"></div>
+    </div>
+    <div class="box">
+      <h3>📦 Исходные TXT без выбранных кодов</h3>
+      <div class="downloads" id="remainderDownloads"></div>
+    </div>
+  </div>
+
+  <textarea id="preview" readonly placeholder="Предпросмотр первых строк CSV"></textarea>
+</div>
+
+<footer>🔒 Вся обработка выполняется локально в браузере. Файлы никуда не отправляются.</footer>
+</div>
+
+<script>
+(() => {
+const fileInput=document.getElementById('fileInput'),fileList=document.getElementById('fileList'),dropZone=document.getElementById('dropZone');
+const productName=document.getElementById('productName'),price=document.getElementById('price'),targetCount=document.getElementById('targetCount');
+const processBtn=document.getElementById('processBtn'),downloadCsvBtn=document.getElementById('downloadCsvBtn'),downloadRemaindersBtn=document.getElementById('downloadRemaindersBtn'),resetBtn=document.getElementById('resetBtn');
+const ids=['filesCount','totalCount','validCount','selectedCount','remainingCount','unknownCount'];
+const stat=Object.fromEntries(ids.map(id=>[id,document.getElementById(id)]));
+const log=document.getElementById('log'),results=document.getElementById('results'),tableWrap=document.getElementById('tableWrap');
+const csvDownloads=document.getElementById('csvDownloads'),remainderDownloads=document.getElementById('remainderDownloads'),preview=document.getElementById('preview');
+let files=[],csvFiles=[],remainderFiles=[];
+
+const fmt=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+const norm=s=>String(s??'').replace(/^\uFEFF/,'').trim();
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safe=s=>String(s).replace(/[\\/:*?"<>|]/g,'_');
+const readFile=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result||''));r.onerror=()=>rej(r.error);r.readAsText(f,'UTF-8')});
+
+function isCode(v){
+  return /^01\d{14}21\S+$/.test(v) || /^\d{14}\S+$/.test(v);
+}
+function csvCell(v){
+  v=String(v??'');
+  return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;
+}
+function csvRow(code,name,priceValue){
+  return ['0',name,priceValue,'','728','22%','КИЗ',code].map(csvCell).join(',');
+}
+function makeFile(name,content,type){
+  const blob=new Blob([content],{type:type||'text/plain;charset=utf-8'});
+  return {name,url:URL.createObjectURL(blob),size:content?content.split(/\r?\n/).length:0};
+}
+function clearResults(){
+  [...csvFiles,...remainderFiles].forEach(f=>URL.revokeObjectURL(f.url));
+  csvFiles=[];remainderFiles=[];results.style.display='none';tableWrap.innerHTML='';csvDownloads.innerHTML='';remainderDownloads.innerHTML='';preview.value='';
+  downloadCsvBtn.disabled=true;downloadRemaindersBtn.disabled=true;log.style.display='none';
+  ids.forEach(id=>stat[id].textContent='0');
+}
+function renderFiles(){
+  fileList.innerHTML=files.length?files.map((f,i)=>`<div class="file-row">${String(i+1).padStart(2,'0')}. ${esc(f.name)}</div>`).join(''):'<div class="hint">Файлы не выбраны</div>';
+  processBtn.disabled=!files.length;
+}
+function setFiles(list){
+  files=Array.from(list||[]).filter(f=>/\.txt$/i.test(f.name)||f.type==='text/plain'||!f.type);
+  clearResults();renderFiles();
+}
+fileInput.onchange=e=>setFiles(e.target.files);
+['dragenter','dragover'].forEach(x=>dropZone.addEventListener(x,e=>{e.preventDefault();dropZone.classList.add('dragover')}));
+['dragleave','drop'].forEach(x=>dropZone.addEventListener(x,e=>{e.preventDefault();dropZone.classList.remove('dragover')}));
+dropZone.addEventListener('drop',e=>setFiles(e.dataTransfer.files));
+
+function renderDownloadList(el,list){
+  el.innerHTML='';
+  if(!list.length){el.innerHTML='<div class="hint">Файлы не созданы</div>';return}
+  list.forEach(f=>{
+    const a=document.createElement('a');
+    a.className='download-link';a.href=f.url;a.download=f.name;
+    a.textContent='⬇️ '+f.name;
+    el.appendChild(a);
+  });
+}
+function triggerAll(list){
+  list.forEach((f,i)=>setTimeout(()=>{
+    const a=document.createElement('a');a.href=f.url;a.download=f.name;
+    document.body.appendChild(a);a.click();a.remove();
+  },i*250));
+}
+
+processBtn.onclick=async()=>{
+  clearResults();
+  const name=norm(productName.value);
+  const priceValue=norm(price.value).replace(',','.');
+  const target=Math.max(0,parseInt(targetCount.value,10)||0);
+
+  if(!name){alert('Укажите название товара');return}
+  if(!priceValue || !/^\d+(?:\.\d+)?$/.test(priceValue)){alert('Укажите цену, например 110.66');return}
+  if(target<1){alert('Укажите нужное количество кодов');return}
+
+  processBtn.disabled=true;processBtn.textContent='⏳ Обработка...';
+
+  try{
+    const sourceData=[];
+    const valid=[];
+    let totalLines=0,unknown=0,globalId=0;
+
+    for(let fileIndex=0;fileIndex<files.length;fileIndex++){
+      const file=files[fileIndex];
+      const lines=(await readFile(file)).split(/\r?\n/).map(norm).filter(Boolean);
+      totalLines+=lines.length;
+      const items=lines.map(code=>{
+        const item={id:globalId++,code,fileIndex,valid:isCode(code)};
+        if(item.valid) valid.push(item); else unknown++;
+        return item;
+      });
+      sourceData.push({file,items});
+    }
+
+    if(valid.length<target){
+      log.textContent=`Недостаточно кодов.\nНужно: ${fmt(target)}.\nРаспознано: ${fmt(valid.length)}.`;
+      log.style.display='block';
+      return;
+    }
+
+    const selected=valid.slice(0,target);
+    const selectedIds=new Set(selected.map(x=>x.id));
+    const rows=[];
+
+    for(const source of sourceData){
+      const taken=source.items.filter(x=>selectedIds.has(x.id)).length;
+      const kept=source.items.filter(x=>!selectedIds.has(x.id)).map(x=>x.code);
+      rows.push({name:source.file.name,before:source.items.length,taken,after:kept.length});
+      remainderFiles.push(makeFile('ostatok_'+safe(source.file.name),kept.join('\n'),'text/plain;charset=utf-8'));
+    }
+
+    for(let i=0;i<selected.length;i+=5000){
+      const part=selected.slice(i,i+5000);
+      const csv=part.map(x=>csvRow(x.code,name,priceValue)).join('\r\n');
+      const suffix=String(Math.floor(i/5000)+1).padStart(3,'0');
+      // BOM помогает Excel и некоторым системам корректно определить UTF-8.
+      csvFiles.push(makeFile('chestny_znak_'+suffix+'.csv','\uFEFF'+csv,'text/csv;charset=utf-8'));
+    }
+
+    const remaining=totalLines-target;
+
+    stat.filesCount.textContent=fmt(files.length);
+    stat.totalCount.textContent=fmt(totalLines);
+    stat.validCount.textContent=fmt(valid.length);
+    stat.selectedCount.textContent=fmt(target);
+    stat.remainingCount.textContent=fmt(remaining);
+    stat.unknownCount.textContent=fmt(unknown);
+
+    const body=rows.map((r,i)=>`<tr><td>${String(i+1).padStart(2,'0')}. ${esc(r.name)}</td><td>${fmt(r.before)}</td><td>${fmt(r.taken)}</td><td>${fmt(r.after)}</td></tr>`).join('');
+    tableWrap.innerHTML=`<table><thead><tr><th>Исходный файл</th><th>Было строк</th><th>Взято в CSV</th><th>Осталось</th></tr></thead><tbody>${body}</tbody><tfoot><tr><td>ИТОГО</td><td>${fmt(totalLines)}</td><td>${fmt(target)}</td><td>${fmt(remaining)}</td></tr></tfoot></table>`;
+
+    renderDownloadList(csvDownloads,csvFiles);
+    renderDownloadList(remainderDownloads,remainderFiles);
+
+    preview.value=selected.slice(0,30).map(x=>csvRow(x.code,name,priceValue)).join('\n');
+
+    log.textContent=
+      `Готово.\nСоздано CSV: ${fmt(csvFiles.length)}.\nВ CSV записано кодов: ${fmt(target)}.\nСоздано очищенных TXT: ${fmt(remainderFiles.length)}.\nФайлы сформированы управляемыми частями.`;
+    log.style.display='block';results.style.display='block';
+    downloadCsvBtn.disabled=!csvFiles.length;
+    downloadRemaindersBtn.disabled=!remainderFiles.length;
+  }catch(e){
+    log.textContent='Ошибка: '+(e?.message||e);log.style.display='block';
+  }finally{
+    processBtn.disabled=!files.length;processBtn.textContent='▶️ Создать CSV';
+  }
+};
+
+downloadCsvBtn.onclick=()=>triggerAll(csvFiles);
+downloadRemaindersBtn.onclick=()=>triggerAll(remainderFiles);
+resetBtn.onclick=()=>{
+  clearResults();files=[];fileInput.value='';productName.value='';price.value='';targetCount.value='';renderFiles();
+};
+})();
+</script>
+</body>
+</html>
