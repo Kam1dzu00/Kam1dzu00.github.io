@@ -466,6 +466,10 @@ body::before {
   animation: backdropIn 180ms ease-out;
 }
 
+.case-dialog-backdrop[hidden] {
+  display: none !important;
+}
+
 .case-dialog-backdrop .dialog-window {
   width: min(980px, 100%);
   max-height: min(820px, calc(100vh - 44px));
