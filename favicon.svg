@@ -1,0 +1,5 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MF">
+  <rect width="64" height="64" rx="8" fill="#FFD447"/>
+  <rect x="5" y="5" width="54" height="54" rx="5" fill="none" stroke="#F04B3F" stroke-width="2"/>
+  <text x="32" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="25" font-weight="800" fill="#171713">MF</text>
+</svg>
