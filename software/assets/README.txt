@@ -1,0 +1,1 @@
+The software portfolio loads its custom avatar from avatar-site.txt to keep the repository update path text-only.
